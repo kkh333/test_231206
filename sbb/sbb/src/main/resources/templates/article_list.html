@@ -1,5 +1,18 @@
 <html layout:decorate="~{layout}">
 <div layout:fragment="content" class="container my-3">
+    <div class="row my-3">
+        <div class="col-6">
+            <a th:href="@{/article/create}" class="btn btn-primary">질문 등록하기</a>
+        </div>
+        <div class="col-6">
+            <form>
+                <div class="input-group">
+                    <input type="text" name="kw" id="search_kw" class="form-control" th:value="${param.kw}">
+                    <button class="btn btn-outline-secondary" id="btn_search">찾기</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <table class="table">
         <thead class="table-dark">
         <tr>
@@ -9,8 +22,8 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="article, loop : ${articleList}">
-            <td th:text="${loop.count}"></td>
+        <tr th:each="article, loop : ${paging}">
+            <td th:text="${(paging.number * paging.size) + loop.count}"></td>
             <td>
                 <a th:href="@{|/article/detail/${article.id}|}" th:text="${article.subject}"></a>
             </td>
@@ -18,6 +31,25 @@
         </tr>
         </tbody>
     </table>
-    <a th:href="@{/article/create}" class="btn btn-primary">질문 등록하기</a>
+    <nav th:if="${!paging.isEmpty()}" th:with="kwBase = '?kw=' + ${param.kw != null ? param.kw : ''}" >
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${!paging.hasPrevious} ? 'disabled'">
+                <a class="page-link" th:href="@{|${kwBase}&page=${paging.number - 1}|}">이전</a>
+            </li>
+            <li th:each="page: ${#numbers.sequence(0, paging.totalPages-1)}"
+                th:if="${page >= paging.number-5 and page <= paging.number+5}"
+                th:classappend="${page == paging.number} ? 'active'"
+                class="page-item">
+                <a th:text="${page + 1}" class="page-link" th:href="@{|${kwBase}&page=${page}|}"></a>
+            </li>
+            <li class="page-item" th:classappend="${!paging.hasNext} ? 'disabled'">
+                <a class="page-link" th:href="@{|${kwBase}&page=${paging.number + 1}|}">다음</a>
+            </li>
+        </ul>
+    </nav>
+    <form th:action="@{/article/list}" method="get" id="searchForm">
+        <input type="hidden" id="kw" name="kw" th:value="${kw}">
+        <input type="hidden" id="page" name="page" th:value="${paging.number}">
+    </form>
 </div>
 </html>
